@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf8" />
+  <title>PromiseFSM Test</title>
+  <style>
+		html, body {
+			font-family: sans-serif;
+		}
+
+		button {
+			padding: 5px 10px;
+		}
+
+		span {
+			font-weight: bold;
+		}
+  </style>
+</head>
+<body>
+	<p>Check your console for more info!</p>
+	<section>
+		<h1>Synchronous</h1>
+		Current state: <span id="doorState"></span><br /><br />
+		<button id="openButton">Open</button>
+		<button id="closeButton">Close</button>
+		<button id="lockButton">Lock</button>
+		<button id="unlockButton">Unlock</button>
+	</section>
+
+	<script src="../vendor/p.js"></script>
+	<script src="../src/PromiseFSM.js"></script>
+	<script src="simple.js"></script>
+</body>
+</html>

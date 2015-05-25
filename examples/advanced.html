@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf8" />
+  <title>PromiseFSM Test</title>
+  <style>
+		html, body {
+			font-family: sans-serif;
+		}
+
+		button {
+			padding: 5px 10px;
+		}
+
+		span {
+			font-weight: bold;
+		}
+  </style>
+</head>
+<body>
+	<p>Check your console for more info!</p>
+	<section>
+		<h1>Asynchronous</h1>
+		Current state: <span id="asyncState"></span><br /><br />
+		<button id="runButton">Run</button> <button id="resetButton">Reset</button><br /><br />
+		<div>Service 1 status: <span id="service1Status"></span></div>
+		<div>Service 2 status: <span id="service2Status"></span></div>
+		<div>Service 3 status: <span id="service3Status"></span></div>
+	</section>
+
+	<script src="../vendor/p.js"></script>
+	<script src="../src/PromiseFSM.js"></script>
+	<script src="advanced.js"></script>
+</body>
+</html>
