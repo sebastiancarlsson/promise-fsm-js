@@ -23,10 +23,23 @@ header += "\n";
 
 var lib = fs.readFileSync("./src/PromiseFSM.js", "utf8");
 
-gulp.task('default', sequence('jshint', 'test', 'clean', 'build'));
+gulp.task('default', sequence('jshint', 'test', 'clean', 'build-vanilla', 'build'));
+
+gulp.task('build-vanilla', function() {
+  return gulp.src(['src/PromiseFSM.js'])
+    .pipe(insert.prepend(header))
+    .pipe(gulp.dest('dist'))
+    .pipe(uglify({
+      preserveComments: 'some'
+    }))
+    .pipe(rename({
+      suffix: ".min"
+    }))
+    .pipe(gulp.dest('dist'));
+});
 
 gulp.task('build', function() {
-  return gulp.src(['src/PromiseFSM.js', 'src/templates/*.js'])
+  return gulp.src(['src/templates/*.js'])
     .pipe(insert.prepend(header))
     .pipe(replace("%code%", lib))
     .pipe(gulp.dest('dist'))

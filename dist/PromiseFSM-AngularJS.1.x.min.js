@@ -1,6 +1,6 @@
 /*!
  * PromiseFSM 0.1.0
- * Mon, 25 May 2015 15:35:30 GMT
+ * Mon, 25 May 2015 15:40:56 GMT
  *
  * https://github.com/sebastiancarlsson/promise-fsm-js/
  *

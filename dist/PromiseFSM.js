@@ -10,9 +10,6 @@
  * https://github.com/sebastiancarlsson/promise-fsm-js/blob/master/LICENSE
  *
  **/
-var PromiseFSMModule = angular.module("PromiseFSMModule", []);
-PromiseFSMModule.service("PromiseFSM", ["$q", function ($q) {
-
 var PromiseFSM = (function() {
 	"use strict";
 
@@ -296,8 +293,3 @@ var PromiseFSM = (function() {
 	};
 
 }());
-
-	PromiseFSM.setPromiseAdapter($q);
-
-	return PromiseFSM;
-}]);
