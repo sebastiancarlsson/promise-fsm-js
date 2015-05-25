@@ -20,7 +20,7 @@ This library was written with front-end UI purposes in mind (as seen in the exam
 
 ##### v0.1:
 
-* beta version
+* alpha version
 
 ## Getting started
 
