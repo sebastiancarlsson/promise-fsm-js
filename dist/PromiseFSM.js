@@ -293,7 +293,3 @@ var PromiseFSM = (function() {
 	};
 
 }());
-
-if(typeof module !== 'undefined' && module.exports) {
-  module.exports = PromiseFSM;
-}
