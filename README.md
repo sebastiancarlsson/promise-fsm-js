@@ -18,9 +18,9 @@ This library was written with front-end UI purposes in mind (as seen in the exam
 
 #### Release notes
 
-##### v0.1:
+##### v0.1.0:
 
-* beta version
+* alpha version
 
 ## Getting started
 
