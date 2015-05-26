@@ -22,6 +22,11 @@ This library was written with front-end UI purposes in mind (as seen in the exam
 
 * alpha version
 
+##### v0.1.1:
+
+* Bugfixes
+* Fixed broken Angular examples
+
 ## Getting started
 
 #### Installation
