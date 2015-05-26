@@ -4,7 +4,6 @@
 	PromiseFSM.setPromiseAdapter(P);
 
 	// Let's use a door as an example. It can be open, closed or locked.
-	
 	var name = "doorMachine";
 	var options = {
 		// Let's log some messages

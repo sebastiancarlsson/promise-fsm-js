@@ -2,22 +2,36 @@
 <html ng-app="PromiseFSMTestModule">
 <head>
 	<meta charset="utf8" />
-  <title>PromiseFSM Test</title>
+	<title>PromiseFSM Test</title>
+	<style>
+		html, body {
+			font-family: sans-serif;
+		}
+
+		button {
+			padding: 5px 10px;
+		}
+
+		span {
+			font-weight: bold;
+		}
+	</style>
 </head>
 <body ng-controller="applicationController">
 
 	<section ng-controller="doorController">
 		<h1>Synchronous</h1>
 		STATE: {{state}}<br /><br />
-		<button ng-click="open()" ng-disabled="state !== CONSTANTS.CLOSED">Open</button>
-		<button ng-click="close()" ng-disabled="state !== CONSTANTS.OPENED">Close</button>
-		<button ng-click="lock()" ng-disabled="state !== CONSTANTS.CLOSED">Lock</button>
-		<button ng-click="unlock()" ng-disabled="state !== CONSTANTS.LOCKED">Unlock</button>
+		<button ng-click="open()" ng-disabled="state !== 'closed'">Open</button>
+		<button ng-click="close()" ng-disabled="state !== 'opened'">Close</button>
+		<button ng-click="lock()" ng-disabled="state !== 'closed'">Lock</button>
+		<button ng-click="unlock()" ng-disabled="state !== 'locked'">Unlock</button>
 	</section>
 	<section ng-controller="asyncController">
 		<h1>Asynchronous</h1>
 		STATE: {{state}}<br /><br />
-		<button ng-click="run()">Run</button><br /><br />
+		<button ng-click="run()" ng-disabled="state !== 'before'">Run</button>
+		<button ng-click="reset()" ng-disabled="state !== 'after'">Reset</button><br /><br />
 		<div fsm-example-actor>Actor 1: {{status}}</div>
 		<div fsm-example-actor>Actor 2: {{status}}</div>
 		<div fsm-example-actor>Actor 3: {{status}}</div>
@@ -25,8 +39,7 @@
 	
 	<script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular.min.js"></script>
 	<script src="../vendor/p.js"></script>
-	<script src="../src/PromiseFSM.js"></script>
-	<script src="../src/PromiseFSM-angularjs.js"></script>
+	<script src="../dist/PromiseFSM-AngularJS.1.x.js"></script>
 	<script src="angular.js"></script>
 </body>
 </html>

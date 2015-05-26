@@ -2,93 +2,84 @@ var app = angular.module("PromiseFSMTestModule", ["PromiseFSMModule"]);
 app.run();
 app.controller("applicationController", [function() {}]);
 app.controller("doorController", ["$scope", "PromiseFSM", function($scope, FSM) {
-	var CONSTANTS = {
-		"CLOSED": "closedState",
-		"OPENED": "openedState",
-		"LOCKED": "lockedState"
-	};
-
-	var StateMachineOptions = {
+	// Let's use a door as an example. It can be open, closed or locked.
+	var name = "doorMachine";
+	var options = {
+		// Let's log some messages
 		verbose: true,
-		initialState: CONSTANTS.CLOSED,
-		states: [
-			CONSTANTS.CLOSED,
-			CONSTANTS.OPENED,
-			CONSTANTS.LOCKED
-		],
-		map: [
-			{from: CONSTANTS.CLOSED, to: [CONSTANTS.OPENED, CONSTANTS.LOCKED]},
-			{from: CONSTANTS.OPENED, to: CONSTANTS.CLOSED},
-			{from: CONSTANTS.LOCKED, to: CONSTANTS.CLOSED}
-		]
+		// The list of states
+		states: ["opened", "closed", "locked"],
+		// Initial state is "closed"
+		initialState: "closed",
+		// Corresponding methods will be created on the machine interface
+		actions: {
+			open   : { from: "closed", to: "opened" },
+			close  : { from: "opened", to: "closed" },
+			lock   : { from: "closed", to: "locked" },
+			unlock : { from: "locked", to: "closed" }
+		}
 	};
 
-	$scope.CONSTANTS = CONSTANTS;
+	var stateMachine = FSM.create(name, options);
+	$scope.state = stateMachine.$getState();
 
-	var stateMachine = FSM.create("doorMachine", StateMachineOptions);
-	$scope.state = stateMachine.getState();
-
-	stateMachine.addEventListener(FSM.EVENTS.SET_STATE, function(evt) {
-		$scope.state = stateMachine.getState();
+	stateMachine.$addEventListener(FSM.EVENTS.STATE_CHANGED, function(evt) {
+		$scope.state = stateMachine.$getState();
 	});
 
 	$scope.open = function() {
-		stateMachine.to(CONSTANTS.OPENED);
+		stateMachine.open();
 	}
 
 	$scope.close = function() {
-		stateMachine.to(CONSTANTS.CLOSED);
+		stateMachine.close();
 	}
 
 	$scope.lock = function() {
-		stateMachine.to(CONSTANTS.LOCKED);
+		stateMachine.lock();
 	}
 
 	$scope.unlock = function() {
-		stateMachine.to(CONSTANTS.CLOSED);
+		stateMachine.unlock();
 	}
 
 }]);
 
-app.constant("asyncConstants", {
-	"BEFORE": "beforeState",
-	"AFTER": "afterState"
-});
-
-app.controller("asyncController", ["$scope", "PromiseFSM", "asyncConstants", function($scope, FSM, CONSTANTS) {
-	var StateMachineOptions = {
+app.controller("asyncController", ["$scope", "PromiseFSM", function($scope, FSM) {
+	var options = {
 		verbose: true,
-		initialState: CONSTANTS.BEFORE,
-		states: [
-			CONSTANTS.BEFORE,
-			CONSTANTS.AFTER
-		],
-		map: [
-			{from: CONSTANTS.BEFORE, to: CONSTANTS.AFTER},
-			{from: CONSTANTS.AFTER, to: CONSTANTS.BEFORE}
-		]
+		initialState: "before",
+		states: ["before", "after"],
+		actions: {
+			run   : {from: "before", to: "after"},
+			reset : {from: "after", to: "before"}
+		}
 	};
 
-	var stateMachine = FSM.create("asyncMachine", StateMachineOptions);
-	$scope.state = stateMachine.getState();
+	var stateMachine = FSM.create("asyncMachine", options);
+	$scope.state = stateMachine.$getState();
 
-	stateMachine.addEventListener(FSM.EVENTS.SET_STATE, function(evt) {
+	stateMachine.$addEventListener(FSM.EVENTS.STATE_CHANGED, function(evt) {
 		if(!$scope.$$phase) {
 			$scope.$apply(function() {
-				$scope.state = stateMachine.getState();
+				$scope.state = stateMachine.$getState();
 			});
 		} else {
-			$scope.state = stateMachine.getState();
+			$scope.state = stateMachine.$getState();
 		}
 	});
 
 	$scope.run = function() {
-		stateMachine.to(CONSTANTS.AFTER);
+		stateMachine.run();
+	}
+
+	$scope.reset = function() {
+		stateMachine.reset();
 	}
 
 }]);
 
-app.directive("fsmExampleActor", ["PromiseFSM", "asyncConstants", "$timeout", function(FSM, CONSTANTS, $timeout) {
+app.directive("fsmExampleActor", ["PromiseFSM", "$timeout", function(FSM, $timeout) {
 
 	return {
 		scope: true,
@@ -96,9 +87,13 @@ app.directive("fsmExampleActor", ["PromiseFSM", "asyncConstants", "$timeout", fu
 
 			var stateMachine = FSM.getMachine("asyncMachine");
 
-			scope.status = "I'm idle";
+			scope.$watch("state", function(newVal) {
+				if(newVal === "before") {
+					scope.status = "I'm idle";
+				}
+			});
 
-			stateMachine.addTransition(CONSTANTS.BEFORE, CONSTANTS.AFTER, function(done) {
+			stateMachine.$addTransition("before", "after", function(done) {
 				scope.status = "I'm doing stuff...";
 
 				$timeout(function() {

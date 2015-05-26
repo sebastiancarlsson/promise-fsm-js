@@ -40,7 +40,7 @@
 		actions: {
 			toLoadingState   : { from: "initial",   to: "loading"   },
 			toCompletedState : { from: "loading",   to: "completed" },
-			reset   			   : { from: "completed", to: "initial"   }
+			reset   		 : { from: "completed", to: "initial"   }
 		}
 	};
 
