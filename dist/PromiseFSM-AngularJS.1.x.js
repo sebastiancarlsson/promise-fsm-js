@@ -1,6 +1,6 @@
 /*!
  * PromiseFSM 0.1.0
- * Mon, 25 May 2015 15:40:56 GMT
+ * Tue, 26 May 2015 09:49:32 GMT
  *
  * https://github.com/sebastiancarlsson/promise-fsm-js/
  *
@@ -84,7 +84,7 @@ var PromiseFSM = (function() {
 		
 		if(!this.isSwitchLegal(from, to)) {
 			if(this.verbose) {
-				warn("State change failed - illegal transition attempt from \"" + this.state + "\" to \"" + newState + "\"");
+				warn("State change failed - illegal transition attempt from \"" + from + "\" to \"" + to + "\"");
 			}
 			
 			deferred.reject(new Error(errorNames.ILLEGAL_TRANSITION));
