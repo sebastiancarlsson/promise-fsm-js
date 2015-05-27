@@ -209,7 +209,7 @@ stateMachine.$removeEventListener(type, callback);
 
 Feel free to fork this repository and submit pull requests.
 
-1. Clone the repository.
+1. Clone the repository and check out the 'develop' branch.
 2. Do `npm install` to download the build dependencies.
 3. Do your thang.
 4. Run `gulp` to test and build. Please check the gulpfile for the complete list of gulp tasks.
