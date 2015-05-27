@@ -214,7 +214,7 @@ Feel free to fork this repository and submit pull requests.
 3. Do your thang.
 4. Run `gulp` to test and build. Please check the gulpfile for the complete list of gulp tasks.
 
-If you want to run the tests without gulp, you'll install [mocha](http://mochajs.org/#installation) globally `npm install -g mocha` then run `mocha`.
+If you want to run the tests without gulp, install [mocha](http://mochajs.org/#installation) globally `npm install -g mocha` then run `mocha`.
 
 The idea behind the test names is that they should be easily "grep-able", for example `mocha --grep "#$getState() after_state_change"`.
 
