@@ -209,10 +209,11 @@ stateMachine.$removeEventListener(type, callback);
 
 Feel free to fork this repository and submit pull requests.
 
-1. Clone the repository and check out the 'develop' branch.
+1. Clone the repository, check out 'develop' and branch out using [git-flow](https://github.com/nvie/gitflow) ([cheatsheet](http://danielkummer.github.io/git-flow-cheatsheet/)) naming conventions.
 2. Do `npm install` to download the build dependencies.
 3. Do your thang.
 4. Run `gulp` to test and build. Please check the gulpfile for the complete list of gulp tasks.
+5. Repeat 3 and 4 until you're happy, then submit a pull request :)
 
 If you want to run the tests without gulp, install [mocha](http://mochajs.org/#installation) globally `npm install -g mocha` then run `mocha`.
 
