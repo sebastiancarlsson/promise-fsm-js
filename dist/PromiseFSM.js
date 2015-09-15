@@ -1,6 +1,6 @@
 /*!
  * PromiseFSM 0.1.2
- * Tue, 15 Sep 2015 10:56:43 GMT
+ * Tue, 15 Sep 2015 12:56:58 GMT
  *
  * https://github.com/sebastiancarlsson/promise-fsm-js/
  *
@@ -86,7 +86,7 @@ var PromiseFSM = (function() {
 		
 		if(!transitionLegal) {
 			if(this.verbose) {
-				warn("State change failed - illegal transition attempt from \"" + from + "\" to \"" + to + "\"");
+				warn("State change failed - illegal transition attempt from \"" + this.state + "\" to \"" + to + "\"");
 			}
 			
 			deferred.reject(new Error(errorNames.ILLEGAL_TRANSITION));
@@ -94,20 +94,20 @@ var PromiseFSM = (function() {
 		}
 		
 		this.locked = true;
-		this.dispatchEvent(new StateMachineEvent(eventNames.LOCKED, from, to));
+		this.dispatchEvent(new StateMachineEvent(eventNames.LOCKED, this.state, to));
 
 		// TODO add guards here
-		this.dispatchEvent(new StateMachineEvent(eventNames.EXIT_STATE, from, to));
+		this.dispatchEvent(new StateMachineEvent(eventNames.EXIT_STATE, this.state, to));
 		//this.transitioning = true;
 
 		if(this.verbose) {
-			log("\"" + from + "\" -> \"" + to + "\"");
+			log("\"" + this.state + "\" -> \"" + to + "\"");
 		}
 
 		var callbacks = [];
 		var i = this.transitions.length;
 		while(i--) {
-			if(this.transitions[i].from === from && this.transitions[i].to === to) {
+			if(this.transitions[i].from === this.state && this.transitions[i].to === to) {
 				callbacks.push(this.transitions[i].callback);
 			}
 		}
@@ -116,7 +116,7 @@ var PromiseFSM = (function() {
 
 		if(callbacks.length > 0) {
 			if(this.verbose) {
-				log("Pending state change from \"" + from + "\" -> \"" + to + "\"...");
+				log("Pending state change from \"" + this.state + "\" -> \"" + to + "\"...");
 			}
 
 			var subPromises = [];
