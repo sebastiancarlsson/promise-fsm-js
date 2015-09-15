@@ -1,6 +1,6 @@
 /*!
  * PromiseFSM 0.1.1
- * Tue, 26 May 2015 09:53:03 GMT
+ * Tue, 15 Sep 2015 09:43:31 GMT
  *
  * https://github.com/sebastiancarlsson/promise-fsm-js/
  *
@@ -69,6 +69,8 @@ var PromiseFSM = (function() {
 	};
 
 	StateMachine.prototype.transition = function(from, to) {
+		var args = Array.prototype.slice.call(arguments).splice(2);
+
 		var deferred = promiseAdapter.defer();
 		if(this.locked) {
 			if(this.verbose) {
@@ -113,12 +115,15 @@ var PromiseFSM = (function() {
 			}
 
 			var subPromises = [];
-			var subDeferred;
+			var subDeferred, callbackArguments;
 			i = callbacks.length;
 			while(i--) {
 				subDeferred = promiseAdapter.defer();
 				subPromises.push(subDeferred.promise);
-				callbacks[i](subDeferred.resolve);
+				
+				callbackArguments = args.slice();
+				callbackArguments.unshift(subDeferred.resolve);
+				callbacks[i].apply(null, callbackArguments);
 			}
 
 			var promise = promiseAdapter.all(subPromises);
