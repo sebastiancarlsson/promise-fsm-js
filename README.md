@@ -179,13 +179,13 @@ An event object is passed to the callback with three properties, `type`, `from` 
 
 When an action method is called, the machine instance emits the following events:
 
-| Type											| When |
-|---------------------------|------|
-|`PromiseFSM.LOCKED`				|First thing that happens when an action method is called (action methods deactivated)|
-|`PromiseFSM.EXIT_STATE`		|Immediately before transition handlers are invoked|
-|`PromiseFSM.ENTER_STATE`		|Immediately after all transitions are completed ($getState now returns new state)|
-|`PromiseFSM.UNLOCKED`			|State machine is unlocked (action methods reactivated)|
-|`PromiseFSM.STATE_CHANGED`	|State change is completed.|
+| Type											      | When |
+|---------------------------------|------|
+|`PromiseFSM.EVENTS.LOCKED`				|First thing that happens when an action method is called (action methods deactivated)|
+|`PromiseFSM.EVENTS.EXIT_STATE`		|Immediately before transition handlers are invoked|
+|`PromiseFSM.EVENTS.ENTER_STATE`	|Immediately after all transitions are completed ($getState now returns new state)|
+|`PromiseFSM.EVENTS.UNLOCKED`			|State machine is unlocked (action methods reactivated)|
+|`PromiseFSM.EVENTS.STATE_CHANGED`|State change is completed.|
 
 If you don't know what event to listen to, use the `STATE_CHANGED` event.
 
