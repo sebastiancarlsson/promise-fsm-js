@@ -15,6 +15,7 @@ beforeEach(function() {
       action1: { from:"state1", to:"state2" },
       action2: { from:"state2", to:"state3" },
       action3: { from:"state3", to:"state1" },
+      action4: { from:["state2","state3"], to:"state1" }
     }
   }
 });
@@ -140,6 +141,26 @@ describe("stateMachineInstance".blue, function() {
           }
         }
       });
+    });
+
+    it("should be possible to use multiple 'from' states", function() {
+      // Change to state2
+      stateMachine.action1();
+      stateMachine.$getState().should.equal("state2");
+        
+      // Change back to state1
+      stateMachine.action4();
+      stateMachine.$getState().should.equal("state1");
+
+      // Change to state2 again
+      stateMachine.action1();
+      // Then change to state3
+      stateMachine.action2();
+      stateMachine.$getState().should.equal("state3");
+
+      // Change back to state1
+      stateMachine.action4();
+      stateMachine.$getState().should.equal("state1");
     });
   });
 

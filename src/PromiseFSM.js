@@ -57,8 +57,6 @@ var PromiseFSM = (function() {
 	};
 
 	StateMachine.prototype.transition = function(from, to) {
-		var args = Array.prototype.slice.call(arguments).splice(2);
-
 		var deferred = promiseAdapter.defer();
 		if(this.locked) {
 			if(this.verbose) {
@@ -69,7 +67,12 @@ var PromiseFSM = (function() {
 			return deferred.promise;
 		}
 		
-		if(!this.isSwitchLegal(from, to)) {
+		var transitionLegal = false;
+		if((Object.prototype.toString.call(from) === '[object Array]' && from.indexOf(this.state) > -1) || (from === this.state)) {
+			transitionLegal = true;
+		}
+		
+		if(!transitionLegal) {
 			if(this.verbose) {
 				warn("State change failed - illegal transition attempt from \"" + from + "\" to \"" + to + "\"");
 			}
@@ -96,6 +99,8 @@ var PromiseFSM = (function() {
 				callbacks.push(this.transitions[i].callback);
 			}
 		}
+
+		var args = Array.prototype.slice.call(arguments).splice(2);
 
 		if(callbacks.length > 0) {
 			if(this.verbose) {
@@ -138,39 +143,6 @@ var PromiseFSM = (function() {
 		if(this.verbose) {
 			log("Transition completed. New state is \"" + to + "\".");
 		}
-	};
-
-	StateMachine.prototype.isSwitchLegal = function(from, to) {
-		if(from !== this.state) {
-			return false;
-		}
-
-		if (from === to) {
-			return false;
-		}
-
-		if (this.states.indexOf(to) === -1) {
-			console.log('doesnt exist');
-			return false;
-		}
-
-		for(var i in this.actions) {
-			if (this.actions[i].to === to) {
-				if (typeof this.actions[i].from === 'string' && (this.actions[i].from === from || this.actions[i].from === '*')) {
-					return true;
-				} else if (Object.prototype.toString.call(this.actions[i].from) === '[object Array]') {
-					var toArray = this.actions[i].from;
-					var j = toArray.length;
-					while (j--) {
-						if (toArray[j] === from) {
-							return true;
-						}
-					}
-				}
-			}
-		}
-
-		return false;
 	};
 
 	StateMachine.prototype.addTransition = function(from, to, callback) {
