@@ -14,13 +14,7 @@ var PromiseFSM = (function() {
 		if (options.states) this.states = options.states;
 		this.verbose = options.verbose || false;
 
-		this.interface = {
-			$getState: this.getState.bind(this),
-			$addTransition: this.addTransition.bind(this),
-			$removeTransition: this.removeTransition.bind(this),
-			$addEventListener: this.addEventlistener.bind(this),
-			$removeEventListener: this.removeEventListener.bind(this)
-		};
+		this.interface = {};
 
 		if(this.verbose === true) {
 			log("Initializing state machine \"" + this.name + "\"");
@@ -39,7 +33,7 @@ var PromiseFSM = (function() {
 		if(options.actions && Object.prototype.toString.call(this.actions) === '[object Object]' && Object.keys(options.actions).length > 0) {
 			this.actions = options.actions;
 			for(var key in this.actions) {
-				this.interface[key] = this.transition.bind(this, this.actions[key].from, this.actions[key].to);
+				this[key] = this.transition.bind(this, this.actions[key].from, this.actions[key].to);
 			}
 		} else {
 			throw new Error("PromiseFSM - You have to define at least one action. E.g. options.actions = { myAction: { from: \"state1\", to: \"state2\" } }");
@@ -51,10 +45,6 @@ var PromiseFSM = (function() {
 			this.initialState = this.state = this.states[0];
 		}
 	}
-
-	StateMachine.prototype.getState = function() {
-		return this.state;
-	};
 
 	StateMachine.prototype.transition = function(from, to) {
 		var deferred = promiseAdapter.defer();
@@ -145,25 +135,6 @@ var PromiseFSM = (function() {
 		}
 	};
 
-	StateMachine.prototype.addTransition = function(from, to, callback) {
-		if(this.getTransitionIndex(from, to, callback) > -1) {
-			warn("Duplicate transition added, only the first will be called");
-		} else {
-			this.transitions.push({
-				from: from,
-				to: to,
-				callback: callback
-			});
-		}
-	};
-
-	StateMachine.prototype.removeTransition = function(from, to, callback) {
-		var i = this.getTransitionIndex(from, to, callback);
-		if(i > -1) {
-			this.transitions.splice(i, 1);
-		}
-	};
-
 	StateMachine.prototype.getTransitionIndex = function(from, to, callback) {
 		var i = this.transitions.length;
 		while(i--) {
@@ -172,22 +143,6 @@ var PromiseFSM = (function() {
 			}
 		}
 		return -1;
-	};
-
-	StateMachine.prototype.addEventlistener = function(type, callback) {
-		this.listeners.push({
-			type: type,
-			callback: callback
-		});
-	};
-
-	StateMachine.prototype.removeEventListener = function(type, callback) {
-		var i = this.listeners.length;
-		while(i--) {
-			if(this.listeners[i].type === type && this.listeners[i].callback === callback) {
-				this.listeners.splice(i, 1);
-			}
-		}
 	};
 
 	StateMachine.prototype.dispatchEvent = function(evt) {
@@ -199,8 +154,43 @@ var PromiseFSM = (function() {
 		}
 	};
 
-	StateMachine.prototype.getInterface = function() {
-		return this.interface;
+	StateMachine.prototype.$getState = function() {
+		return this.state;
+	};
+
+	StateMachine.prototype.$addTransition = function(from, to, callback) {
+		if(this.getTransitionIndex(from, to, callback) > -1) {
+			warn("Duplicate transition added, only the first will be called");
+		} else {
+			this.transitions.push({
+				from: from,
+				to: to,
+				callback: callback
+			});
+		}
+	};
+
+	StateMachine.prototype.$removeTransition = function(from, to, callback) {
+		var i = this.getTransitionIndex(from, to, callback);
+		if(i > -1) {
+			this.transitions.splice(i, 1);
+		}
+	};
+
+	StateMachine.prototype.$addEventListener = function(type, callback) {
+		this.listeners.push({
+			type: type,
+			callback: callback
+		});
+	};
+
+	StateMachine.prototype.$removeEventListener = function(type, callback) {
+		var i = this.listeners.length;
+		while(i--) {
+			if(this.listeners[i].type === type && this.listeners[i].callback === callback) {
+				this.listeners.splice(i, 1);
+			}
+		}
 	};
 
 	function log(text) {
@@ -245,12 +235,12 @@ var PromiseFSM = (function() {
 		},
 		create: function(name, options) {
 			machines[name] = new StateMachine(name, options);
-			return machines[name].getInterface();
+			return machines[name];
 		},
 		getMachine: function(name) {
 			var machine = machines[name];
 			if(machine) {
-				return machine.getInterface();
+				return machine;
 			} else {
 				return undefined;
 			}

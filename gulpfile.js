@@ -1,14 +1,15 @@
-var gulp      = require('gulp');
-var gutil     = require('gulp-util');
-var jshint 	  = require('gulp-jshint');
-var clean	    = require('gulp-clean');
-var uglify 	  = require('gulp-uglify');
-var rename    = require('gulp-rename');
-var replace   = require('gulp-replace');
-var sequence  = require('gulp-sequence');
-var insert    = require('gulp-insert');
-var fs        = require('fs');
-var mocha     = require('gulp-mocha');
+var gulp        = require('gulp');
+var gutil       = require('gulp-util');
+var jshint 	    = require('gulp-jshint');
+var clean	      = require('gulp-clean');
+var uglify 	    = require('gulp-uglify');
+var rename      = require('gulp-rename');
+var replace     = require('gulp-replace');
+var sequence    = require('gulp-sequence');
+var insert      = require('gulp-insert');
+var fs          = require('fs');
+var mocha       = require('gulp-mocha');
+var browserSync = require('browser-sync').create();
 
 var packageJSON  = require('./package');
 var jshintConfig = packageJSON.jshintConfig;
@@ -53,8 +54,12 @@ gulp.task('build', function() {
 });
 
 gulp.task('test', function() {
-  return gulp.src('test/test.js', {read: false})
-    .pipe(mocha({reporter: 'nyan'}));
+  global.chai = require('chai');
+  global.PromiseFSM = require("./include");
+  global.P = require('./vendor/p');
+
+  return gulp.src('test.js', {read: false})
+    .pipe(mocha());
 });
 
 gulp.task('jshint', function() {
@@ -74,4 +79,14 @@ gulp.task('jshint-examples', function() {
 gulp.task('clean', function() {
   gulp.src('dist/*')
     .pipe(clean());
+});
+
+gulp.task('serve', function () {
+    browserSync.init({
+      server: {
+        baseDir: './'
+      }
+    });
+
+    gulp.watch(['./test.js', './src/*.js']).on('change', browserSync.reload);
 });

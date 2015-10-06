@@ -1,15 +1,11 @@
-var should = require("chai").should();
-var colors = require("colors");
-var P = require("../vendor/p.js");
+var should = chai.should();
 
 var name, options, stateMachine;
 
 beforeEach(function() {
-  // Reload PromiseFSM before each test
-  delete require.cache[require.resolve("../src/PromiseFSM")];
-  PromiseFSM = require("./include");
   name = "test";
   options = {
+    initialState: "state1",
     states: ["state1", "state2", "state3"],
     actions: { 
       action1: { from:"state1", to:"state2" },
@@ -17,10 +13,10 @@ beforeEach(function() {
       action3: { from:"state3", to:"state1" },
       action4: { from:["state2","state3"], to:"state1" }
     }
-  }
+  };
 });
 
-describe("PromiseFSM".blue, function() {
+describe("PromiseFSM", function() {
 	describe("#create()", function() {
     context("without_promise_adapter", function() {
       it("should trow error", function() {
@@ -56,7 +52,7 @@ describe("PromiseFSM".blue, function() {
   });
 });
 
-describe("stateMachineInstance".blue, function() {
+describe("stateMachineInstance", function() {
   beforeEach(function() {
     PromiseFSM.setPromiseAdapter(P);
   });
