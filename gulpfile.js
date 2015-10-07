@@ -7,26 +7,43 @@ var rename      = require('gulp-rename');
 var replace     = require('gulp-replace');
 var sequence    = require('gulp-sequence');
 var insert      = require('gulp-insert');
+var bump        = require('gulp-bump');
 var fs          = require('fs');
 var mocha       = require('gulp-mocha');
 var browserSync = require('browser-sync').create();
-
-var packageJSON  = require('./package');
-var jshintConfig = packageJSON.jshintConfig;
+var argv        = require('yargs').argv;
 
 var date = new Date();
-var header = fs.readFileSync("./src/partials/header", "utf8");
-header = header
-  .replace("%date%", date.toUTCString())
-  .replace("%name%", packageJSON.name)
-  .replace("%version%", packageJSON.version);
-header += "\n";
+var header, packageJSON;
 
 var lib = fs.readFileSync("./src/PromiseFSM.js", "utf8");
 
-gulp.task('default', sequence('jshint', 'test', 'clean', 'build-vanilla', 'build'));
+gulp.task('build', sequence('jshint', 'test:vanilla', 'bump', 'prepheader', 'clean', 'build:vanilla', 'build:others'));
 
-gulp.task('build-vanilla', function() {
+gulp.task('bump', function() {
+  var type = 'patch';
+  if(argv.major === true) {
+    type = 'major';
+  } else if(argv.minor === true) {
+    type = 'minor';
+  }
+
+  return gulp.src('./package.json')
+    .pipe(bump({type:type}))
+    .pipe(gulp.dest('./'));
+});
+
+gulp.task('prepheader', function() {
+  packageJSON  = require('./package');
+  header = fs.readFileSync("./src/partials/header", "utf8");
+  header = header
+    .replace("%date%", date.toUTCString())
+    .replace("%name%", packageJSON.name)
+    .replace("%version%", packageJSON.version);
+  header += "\n";
+});
+
+gulp.task('build:vanilla', function() {
   return gulp.src(['src/PromiseFSM.js'])
     .pipe(insert.prepend(header))
     .pipe(gulp.dest('dist'))
@@ -39,7 +56,7 @@ gulp.task('build-vanilla', function() {
     .pipe(gulp.dest('dist'));
 });
 
-gulp.task('build', function() {
+gulp.task('build:others', function() {
   return gulp.src(['src/templates/*.js'])
     .pipe(insert.prepend(header))
     .pipe(replace("%code%", lib))
@@ -53,7 +70,7 @@ gulp.task('build', function() {
     .pipe(gulp.dest('dist'));
 });
 
-gulp.task('test', function() {
+gulp.task('test:vanilla', function() {
   global.chai = require('chai');
   global.PromiseFSM = require("./include");
   global.P = require('./vendor/p');
@@ -77,7 +94,7 @@ gulp.task('jshint-examples', function() {
 });
 
 gulp.task('clean', function() {
-  gulp.src('dist/*')
+  return gulp.src('dist/*')
     .pipe(clean());
 });
 
@@ -88,5 +105,7 @@ gulp.task('serve', function () {
       }
     });
 
-    gulp.watch(['./test.js', './src/*.js']).on('change', browserSync.reload);
+    gulp.watch(['./test.js', './src/**/*.js']).on('change', browserSync.reload);
 });
+
+gulp.task('default', ['serve']);
