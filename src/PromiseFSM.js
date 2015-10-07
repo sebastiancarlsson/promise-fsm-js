@@ -2,19 +2,31 @@ var PromiseFSM = (function() {
 	"use strict";
 
 	function StateMachine(name, options) {
-		this.name = name;
-		this.states = [];
-		this.transitions = [];
-		this.listeners = [];
+		Object.defineProperty(this, 'name', {
+			value: name,
+			writable: false,
+			enumerable: true
+		});
 
-		this.locked = false;
-		//this.transitioning = false;
+		Object.defineProperty(this, 'locked', {
+			value: false,
+			writable: true
+		});
 
-		if (options.actions) this.actions = options.actions;
-		if (options.states) this.states = options.states;
-		this.verbose = options.verbose || false;
+		Object.defineProperty(this, 'verbose', {
+			value: options.verbose || false,
+			writable: false
+		});
 
-		this.interface = {};
+		Object.defineProperty(this, 'transitions', {
+			value: [],
+			writable: false
+		});
+
+		Object.defineProperty(this, 'listeners', {
+			value: [],
+			writable: false
+		});
 
 		if(this.verbose === true) {
 			log("Initializing state machine \"" + this.name + "\"");
@@ -24,142 +36,154 @@ var PromiseFSM = (function() {
 			throw new Error("PromiseFSM - No promise adapter. Promise adapter must be set through PromiseFSM.setPromiseAdapter() before initialization");
 		}
 
-		if(options.states && Object.prototype.toString.call(this.states) === '[object Array]' && options.states.length > 1) {
-			this.states = options.states;
+		if(options.states && Object.prototype.toString.call(options.states) === '[object Array]' && options.states.length > 1) {
+			Object.defineProperty(this, 'states', {
+				value: options.states,
+				writable: false
+			});
 		} else {
 			throw new Error("PromiseFSM - You have to define at least two states. E.g. options.states = [\"state1\", \"state2\"]");
 		}
 
-		if(options.actions && Object.prototype.toString.call(this.actions) === '[object Object]' && Object.keys(options.actions).length > 0) {
-			this.actions = options.actions;
+		if(options.actions && Object.prototype.toString.call(options.actions) === '[object Object]' && Object.keys(options.actions).length > 0) {
+			Object.defineProperty(this, 'actions', {
+				value: options.actions,
+				writable: false
+			});
+
 			for(var key in this.actions) {
-				this[key] = this.transition.bind(this, this.actions[key].from, this.actions[key].to);
+				this[key] = this.__transition.bind(this, this.actions[key].from, this.actions[key].to);
 			}
 		} else {
 			throw new Error("PromiseFSM - You have to define at least one action. E.g. options.actions = { myAction: { from: \"state1\", to: \"state2\" } }");
 		}
 		
-		if(options.initialState) {
-			this.initialState = this.state = options.initialState;
-		} else {
-			this.initialState = this.state = this.states[0];
-		}
+		Object.defineProperty(this, 'state', {
+			value: options.initialState || this.states[0],
+			writable: true
+		});
 	}
 
-	StateMachine.prototype.transition = function(from, to) {
-		var deferred = promiseAdapter.defer();
-		if(this.locked) {
-			if(this.verbose) {
-				warn("State change failed - machine is locked");
-			}
+	Object.defineProperty(StateMachine.prototype, '__transition', {
+		value: function(from, to) {
+			var deferred = promiseAdapter.defer();
+			if(this.locked) {
+				if(this.verbose) {
+					warn("State change failed - machine is locked");
+				}
 
-			deferred.reject(new Error(errorNames.LOCKED));
-			return deferred.promise;
-		}
-		
-		var transitionLegal = false;
-		if((Object.prototype.toString.call(from) === '[object Array]' && from.indexOf(this.state) > -1) || (from === this.state)) {
-			transitionLegal = true;
-		}
-		
-		if(!transitionLegal) {
-			if(this.verbose) {
-				warn("State change failed - illegal transition attempt from \"" + this.state + "\" to \"" + to + "\"");
+				deferred.reject(new Error(errorNames.LOCKED));
+				return deferred.promise;
 			}
 			
-			deferred.reject(new Error(errorNames.ILLEGAL_TRANSITION));
-			return deferred.promise;
-		}
-		
-		this.locked = true;
-		this.dispatchEvent(new StateMachineEvent(eventNames.LOCKED, this.state, to));
-
-		// TODO add guards here
-		this.dispatchEvent(new StateMachineEvent(eventNames.EXIT_STATE, this.state, to));
-		//this.transitioning = true;
-
-		if(this.verbose) {
-			log("\"" + this.state + "\" -> \"" + to + "\"");
-		}
-
-		var callbacks = [];
-		var i = this.transitions.length;
-		while(i--) {
-			if(this.transitions[i].from === this.state && this.transitions[i].to === to) {
-				callbacks.push(this.transitions[i].callback);
+			var transitionLegal = false;
+			if((Object.prototype.toString.call(from) === '[object Array]' && from.indexOf(this.state) > -1) || (from === this.state)) {
+				transitionLegal = true;
 			}
-		}
-
-		var args = Array.prototype.slice.call(arguments).splice(2);
-
-		if(callbacks.length > 0) {
-			if(this.verbose) {
-				log("Pending state change from \"" + this.state + "\" -> \"" + to + "\"...");
-			}
-
-			var subPromises = [];
-			var subDeferred, callbackArguments;
-			i = callbacks.length;
-			while(i--) {
-				subDeferred = promiseAdapter.defer();
-				subPromises.push(subDeferred.promise);
+			
+			if(!transitionLegal) {
+				if(this.verbose) {
+					warn("State change failed - illegal transition attempt from \"" + this.state + "\" to \"" + to + "\"");
+				}
 				
-				callbackArguments = args.slice();
-				callbackArguments.unshift(subDeferred.resolve);
-				callbacks[i].apply(null, callbackArguments);
+				deferred.reject(new Error(errorNames.ILLEGAL_TRANSITION));
+				return deferred.promise;
+			}
+			
+			this.locked = true;
+			this.__dispatchEvent(new StateMachineEvent(eventNames.LOCKED, this.state, to));
+
+			// TODO add guards here
+			this.__dispatchEvent(new StateMachineEvent(eventNames.EXIT_STATE, this.state, to));
+
+			if(this.verbose) {
+				log("\"" + this.state + "\" -> \"" + to + "\"");
 			}
 
-			var promise = promiseAdapter.all(subPromises);
-			promise.then(this.completeSwitch.bind(this, to));
-			return promise;
-		} else {
-			this.completeSwitch(to);
-			deferred.resolve();
-			return deferred.promise;
+			var callbacks = [];
+			var i = this.transitions.length;
+			while(i--) {
+				if(this.transitions[i].from === this.state && this.transitions[i].to === to) {
+					callbacks.push(this.transitions[i].callback);
+				}
+			}
+
+			var args = Array.prototype.slice.call(arguments).splice(2);
+
+			if(callbacks.length > 0) {
+				if(this.verbose) {
+					log("Pending state change from \"" + this.state + "\" -> \"" + to + "\"...");
+				}
+
+				var subPromises = [];
+				var subDeferred, callbackArguments;
+				i = callbacks.length;
+				while(i--) {
+					subDeferred = promiseAdapter.defer();
+					subPromises.push(subDeferred.promise);
+					
+					callbackArguments = args.slice();
+					callbackArguments.unshift(subDeferred.resolve);
+					callbacks[i].apply(null, callbackArguments);
+				}
+				var promise = promiseAdapter.all(subPromises);
+				promise.then(this.__completeSwitch.bind(this, to));
+				return promise;
+			} else {
+				this.__completeSwitch(to);
+				deferred.resolve();
+				return deferred.promise;
+			}
 		}
-	};
+	});
 	
-	StateMachine.prototype.completeSwitch = function(to) {
-		var from = this.state;
-		this.state = to;
-		this.dispatchEvent(new StateMachineEvent(eventNames.ENTER_STATE, from, to));
+	Object.defineProperty(StateMachine.prototype, '__completeSwitch', {
+	//StateMachine.prototype.completeSwitch = function(to) {
+		value: function(to) {
+			var from = this.state;
+			this.state = to;
+			this.__dispatchEvent(new StateMachineEvent(eventNames.ENTER_STATE, from, to));
 
-		this.locked = false;
-		this.dispatchEvent(new StateMachineEvent(eventNames.UNLOCKED, from, to));
+			this.locked = false;
+			this.__dispatchEvent(new StateMachineEvent(eventNames.UNLOCKED, from, to));
 
-		//this.transitioning = false;
-		this.dispatchEvent(new StateMachineEvent(eventNames.STATE_CHANGED, from, to));
+			this.__dispatchEvent(new StateMachineEvent(eventNames.STATE_CHANGED, from, to));
 
-		if(this.verbose) {
-			log("Transition completed. New state is \"" + to + "\".");
-		}
-	};
-
-	StateMachine.prototype.getTransitionIndex = function(from, to, callback) {
-		var i = this.transitions.length;
-		while(i--) {
-			if(this.transitions[i].from === from && this.transitions[i].to === to && this.transitions[i].callback === callback) {
-				return i;
+			if(this.verbose) {
+				log("Transition completed. New state is \"" + to + "\".");
 			}
 		}
-		return -1;
-	};
+	});
 
-	StateMachine.prototype.dispatchEvent = function(evt) {
-		var i = this.listeners.length;
-		while(i--) {
-			if(this.listeners[i].type === evt.type) {
-				this.listeners[i].callback(evt);
+	Object.defineProperty(StateMachine.prototype, '__getTransitionIndex', {
+		value: function(from, to, callback) {
+			var i = this.transitions.length;
+			while(i--) {
+				if(this.transitions[i].from === from && this.transitions[i].to === to && this.transitions[i].callback === callback) {
+					return i;
+				}
+			}
+			return -1;
+		}
+	});
+
+	Object.defineProperty(StateMachine.prototype, '__dispatchEvent', {
+		value: function(evt) {
+			var i = this.listeners.length;
+			while(i--) {
+				if(this.listeners[i].type === evt.type) {
+					this.listeners[i].callback(evt);
+				}
 			}
 		}
-	};
+	});
 
 	StateMachine.prototype.$getState = function() {
 		return this.state;
 	};
 
 	StateMachine.prototype.$addTransition = function(from, to, callback) {
-		if(this.getTransitionIndex(from, to, callback) > -1) {
+		if(this.__getTransitionIndex(from, to, callback) > -1) {
 			warn("Duplicate transition added, only the first will be called");
 		} else {
 			this.transitions.push({
@@ -171,7 +195,7 @@ var PromiseFSM = (function() {
 	};
 
 	StateMachine.prototype.$removeTransition = function(from, to, callback) {
-		var i = this.getTransitionIndex(from, to, callback);
+		var i = this.__getTransitionIndex(from, to, callback);
 		if(i > -1) {
 			this.transitions.splice(i, 1);
 		}

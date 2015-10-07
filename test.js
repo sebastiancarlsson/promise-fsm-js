@@ -6,6 +6,7 @@ beforeEach(function() {
   name = "test";
   options = {
     initialState: "state1",
+    //verbose: true,
     states: ["state1", "state2", "state3"],
     actions: { 
       action1: { from:"state1", to:"state2" },
@@ -222,19 +223,6 @@ describe("stateMachineInstance", function() {
       });
     });
 
-    it("should retrieve arguments passed to action methods", function(done) {
-      stateMachine.$addTransition("state1", "state2", function(resolve, param1, param2) {
-        should.exist(param1);
-        param1.should.equal("param1");
-        should.exist(param2);
-        param2.should.equal("param2");
-        resolve();
-      });
-      stateMachine.action1("param1", "param2").then(function() {
-        done();
-      });
-    })
-
     it("should be possible to add an asynchronous blocking transition", function(done) {
       stateMachine.$addTransition("state1", "state2", function(resolve) {
         stateMachine.$getState().should.equal("state1");
@@ -340,6 +328,19 @@ describe("stateMachineInstance", function() {
         }
       });
     });
+
+    it("callback should retrieve arguments passed to action methods", function(done) {
+      stateMachine.$addTransition("state1", "state2", function(resolve, param1, param2) {
+        should.exist(param1);
+        param1.should.equal("param1");
+        should.exist(param2);
+        param2.should.equal("param2");
+        resolve();
+      });
+      stateMachine.action1("param1", "param2").then(function() {
+        done();
+      });
+    })
   });
 
   describe("#$removeTransition()", function() {
